@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LpsBookManagement.Api.Repositories;
 
-public class MasterJenisBukuRepository(AppDbContext db) : IMasterJenisBukuepository
+public class MasterJenisBukuRepository(AppDbContext db) : IMasterJenisBukuRepository
 {
     public Task<List<MasterJenisBuku>> GetAllAsync(CancellationToken ct) =>
         db.MasterJenisBukus.AsNoTracking().OrderBy(x => x.Nama).ToListAsync(ct);

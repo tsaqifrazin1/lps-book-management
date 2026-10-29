@@ -5,7 +5,7 @@ using LpsBookManagement.Api.Services;
 
 namespace Lps.Api.Services;
 
-public class MasterJenisBukuService(IMasterJenisBukuepository repository) : IMasterJenisBukuService
+public class MasterJenisBukuService(IMasterJenisBukuRepository repository) : IMasterJenisBukuService
 {
     public async Task<List<MasterJenisBukuDto>> GetAllAsync(CancellationToken ct) =>
         (await repository.GetAllAsync(ct)).Select(x => new MasterJenisBukuDto(x.Id, x.Nama)).ToList();

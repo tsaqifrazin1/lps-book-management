@@ -3,7 +3,7 @@ using LpsBookManagement.Api.Models;
 
 namespace LpsBookManagement.Api.Repositories;
 
-public interface IMasterJenisBukuepository
+public interface IMasterJenisBukuRepository
 {
     Task<List<MasterJenisBuku>> GetAllAsync(CancellationToken ct);
     Task<MasterJenisBuku?> GetByIdAsync(int id, CancellationToken ct);
