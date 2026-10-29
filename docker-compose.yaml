@@ -1,0 +1,10 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: lps-book-management
+    environment:
+      POSTGRES_DB: lps-book-management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: lps123
+    ports:
+      - "5432:5432"

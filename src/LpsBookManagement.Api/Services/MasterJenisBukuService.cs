@@ -18,7 +18,7 @@ public class MasterJenisBukuService(IMasterJenisBukuRepository repository) : IMa
 
     public async Task<MasterJenisBukuDto> CreateAsync(CreateMasterJenisBukuRequest request, CancellationToken ct)
     {
-        var entity = new MasterJenisBuku { Nama = request.MasterJenisBukuNama.Trim() };
+        var entity = new MasterJenisBuku { Nama = request.Nama.Trim() };
         await repository.AddAsync(entity, ct);
         await repository.SaveChangesAsync(ct);
         return new MasterJenisBukuDto(entity.Id, entity.Nama);
@@ -28,7 +28,7 @@ public class MasterJenisBukuService(IMasterJenisBukuRepository repository) : IMa
     {
         var entity = await repository.GetByIdAsync(id, ct);
         if (entity is null) return false;
-        entity.Nama = request.MasterJenisBukuNama.Trim();
+        entity.Nama = request.Nama.Trim();
         await repository.SaveChangesAsync(ct);
         return true;
     }
