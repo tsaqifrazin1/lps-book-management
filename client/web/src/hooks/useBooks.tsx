@@ -9,24 +9,6 @@ export type BookType = {
     name: string;
 };
 
-function unwrapArray<T>(data: unknown): T[] {
-    if (Array.isArray(data)) return data as T[];
-
-    if (data && typeof data === "object") {
-        const value = data as {
-            data?: unknown;
-            items?: unknown;
-            $values?: unknown;
-        };
-
-        if (Array.isArray(value.data)) return value.data as T[];
-        if (Array.isArray(value.items)) return value.items as T[];
-        if (Array.isArray(value.$values)) return value.$values as T[];
-    }
-
-    return [];
-}
-
 export function getErrorMessage(error: unknown, fallback: string): string {
     if (error && typeof error === "object" && "response" in error) {
         const response = (
@@ -64,17 +46,15 @@ export function useBooks() {
 
     const loadBooks = useCallback(async () => {
         const response = await bookApi.getAll();
-        setBooks(unwrapArray<Book>(response));
+        setBooks(response);
     }, []);
 
     const loadBookTypes = useCallback(async () => {
         const response = await bookTypeApi.getAll();
 
-        const items = unwrapArray<BookTypeResponse>(response);
-        console.log(items);
 
         setBookTypes(
-            items.map((item) => ({
+            response.map((item) => ({
                 id: item.id,
                 nama: item.name ?? item.nama ?? "",
             })),
@@ -124,7 +104,7 @@ export function useBooks() {
         try {
             const response = await bookApi.getAll(search);
 
-            setBooks(Array.isArray(books) ? books : []);
+            setBooks(response);
         } catch (err) {
             setError(
                 err instanceof Error
@@ -138,7 +118,6 @@ export function useBooks() {
 
     return {
         books,
-        setBooks,
         bookTypes,
         loading,
         error,

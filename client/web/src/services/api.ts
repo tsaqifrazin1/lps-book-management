@@ -41,7 +41,7 @@ async function request<T>(
 
 export const bookApi = {
     getAll: (search?: string) =>
-        request("/books", {
+        request<Book[]>("/books", {
             params: search ? {search: search.trim()} : {},
         }),
 
@@ -65,7 +65,8 @@ export const bookApi = {
     exportCsv: (search?: string) =>
         request("/books/export", {
             params: search ? {search} : {},
-        }, "blob"),
+            responseType: "blob",
+        }),
 };
 
 export const bookTypeApi = {

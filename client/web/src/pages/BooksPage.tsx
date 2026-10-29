@@ -8,7 +8,6 @@ import type { BookRequest } from "../services/api";
 export default function BooksPage() {
     const {
         books,
-        setBooks,
         bookTypes,
         loading,
         error,
@@ -44,8 +43,7 @@ export default function BooksPage() {
                     if (trimmed === "") {
                         await refresh();
                     } else {
-                        const results = await searchBooks(trimmed);
-                        setBooks(results);
+                        await searchBooks(trimmed);
                     }
                 } catch (err) {
                     setError(getErrorMessage(err, "Failed to search books."));
@@ -54,7 +52,7 @@ export default function BooksPage() {
         }, 500);
 
         return () => window.clearTimeout(timeoutId);
-    }, [search, searchBooks, refresh, setBooks, setError]);
+    }, [search, searchBooks, refresh, setError]);
 
     function handleAdd() {
         setError("");
