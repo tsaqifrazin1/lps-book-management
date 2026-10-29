@@ -17,26 +17,26 @@ public class BukuConfiguration : IEntityTypeConfiguration<Buku>
             .ValueGeneratedOnAdd();
 
         builder.Property(x => x.Judul)
-            .HasColumnName("title")
+            .HasColumnName("judul")
             .HasMaxLength(100)
             .IsRequired();
 
         builder.Property(x => x.Penulis)
-            .HasColumnName("author")
+            .HasColumnName("penulis")
             .HasMaxLength(100)
             .IsRequired();
 
         builder.Property(x => x.JenisBukuId)
-            .HasColumnName("book_type_id")
+            .HasColumnName("jenis_buku_id")
             .IsRequired();
 
         builder.Property(x => x.TanggalRilis)
-            .HasColumnName("release_date")
+            .HasColumnName("tanggal_rilis")
             .HasColumnType("date")
             .IsRequired();
 
         builder.Property(x => x.JumlahHalaman)
-            .HasColumnName("page_count")
+            .HasColumnName("jumlah_halaman")
             .IsRequired();
 
         builder.HasOne(x => x.JenisBuku)

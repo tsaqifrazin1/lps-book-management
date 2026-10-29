@@ -33,27 +33,27 @@ namespace LpsBookManagement.Api.Migrations
 
                     b.Property<int>("JenisBukuId")
                         .HasColumnType("integer")
-                        .HasColumnName("book_type_id");
+                        .HasColumnName("jenis_buku_id");
 
                     b.Property<string>("Judul")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("title");
+                        .HasColumnName("judul");
 
                     b.Property<int>("JumlahHalaman")
                         .HasColumnType("integer")
-                        .HasColumnName("page_count");
+                        .HasColumnName("jumlah_halaman");
 
                     b.Property<string>("Penulis")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("author");
+                        .HasColumnName("penulis");
 
                     b.Property<DateOnly>("TanggalRilis")
                         .HasColumnType("date")
-                        .HasColumnName("release_date");
+                        .HasColumnName("tanggal_rilis");
 
                     b.HasKey("Id");
 
@@ -91,7 +91,7 @@ namespace LpsBookManagement.Api.Migrations
                     b.Property<DateTime>("TanggalPerubahan")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("changed_at")
+                        .HasColumnName("tanggal_perubahan")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");

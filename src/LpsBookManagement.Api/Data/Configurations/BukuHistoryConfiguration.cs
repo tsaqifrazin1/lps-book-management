@@ -35,7 +35,7 @@ public class BukuHistoryConfiguration
             .HasColumnType("jsonb");
 
         builder.Property(x => x.TanggalPerubahan)
-            .HasColumnName("changed_at")
+            .HasColumnName("tanggal_perubahan")
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.HasIndex(x => x.BukuId);
