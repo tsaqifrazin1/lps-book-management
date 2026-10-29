@@ -1,11 +1,8 @@
-
 interface ErrorMessageProps {
     message: string | null;
 }
 
-export default function ErrorMessage({
-                                         message,
-                                     }: ErrorMessageProps) {
+export default function ErrorMessage({ message }: ErrorMessageProps) {
     if (!message) return null;
 
     return (

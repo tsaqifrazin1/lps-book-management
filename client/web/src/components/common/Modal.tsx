@@ -1,4 +1,3 @@
-
 import { useEffect, useId, useRef } from "react";
 import type { ReactNode } from "react";
 
@@ -10,18 +9,19 @@ type ModalProps = {
 };
 
 export default function Modal({
-                                  title,
-                                  isOpen,
-                                  onClose,
-                                  children,
-                              }: ModalProps) {
+    title,
+    isOpen,
+    onClose,
+    children,
+}: ModalProps) {
     const titleId = useId();
     const dialogRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!isOpen) return;
 
-        const previousActiveElement = document.activeElement as HTMLElement | null;
+        const previousActiveElement =
+            document.activeElement as HTMLElement | null;
 
         function handleKeyDown(event: KeyboardEvent) {
             if (event.key === "Escape") {
@@ -29,9 +29,10 @@ export default function Modal({
             }
 
             if (event.key === "Tab" && dialogRef.current) {
-                const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
-                    'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-                );
+                const focusable =
+                    dialogRef.current.querySelectorAll<HTMLElement>(
+                        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+                    );
 
                 if (focusable.length === 0) {
                     event.preventDefault();
@@ -54,7 +55,7 @@ export default function Modal({
         document.addEventListener("keydown", handleKeyDown);
 
         const firstInput = dialogRef.current?.querySelector<HTMLElement>(
-            "input, button, select, textarea"
+            "input, button, select, textarea",
         );
         firstInput?.focus();
 
@@ -84,7 +85,10 @@ export default function Modal({
                 className="w-full max-w-lg rounded-xl bg-white shadow-xl"
             >
                 <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-                    <h2 id={titleId} className="text-lg font-semibold text-gray-900">
+                    <h2
+                        id={titleId}
+                        className="text-lg font-semibold text-gray-900"
+                    >
                         {title}
                     </h2>
 
@@ -94,9 +98,9 @@ export default function Modal({
                         aria-label="Close modal"
                         className="rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
                     >
-            <span aria-hidden="true" className="text-xl">
-              &times;
-            </span>
+                        <span aria-hidden="true" className="text-xl">
+                            &times;
+                        </span>
                     </button>
                 </div>
 

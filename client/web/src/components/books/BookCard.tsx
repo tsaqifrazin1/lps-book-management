@@ -1,56 +1,59 @@
+import type { Book } from "../../hooks/useBooks";
 
-import { Pencil, Trash2 } from "lucide-react";
-import type { Book } from "../../types";
-
-interface BookCardProps {
+type BookCardProps = {
     book: Book;
     onEdit: (book: Book) => void;
     onDelete: (book: Book) => void;
-    onView: (book: Book) => void;
-}
+    disabled?: boolean;
+};
 
 export default function BookCard({
-                                     book,
-                                     onEdit,
-                                     onDelete,
-                                     onView,
-                                 }: BookCardProps) {
+    book,
+    onEdit,
+    onDelete,
+    disabled = false,
+}: BookCardProps) {
     return (
-        <article className="rounded-xl border bg-white p-5 shadow-sm">
-            <button
-                type="button"
-                onClick={() => onView(book)}
-                className="block w-full text-left"
-            >
-                <h3 className="font-semibold text-gray-900">
+        <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+                <h3 className="text-lg font-semibold text-gray-900">
                     {book.judul}
                 </h3>
-                <p className="mt-1 text-sm text-gray-500">{book.penulis}</p>
-                <p className="mt-3 text-sm text-gray-600">
-                    Released: {book.tanggalRilis}
-                </p>
-                <p className="text-sm text-gray-600">
-                    Pages: {book.jumlahHalaman}
-                </p>
-            </button>
 
-            <div className="mt-4 flex justify-end gap-2 border-t pt-3">
+                <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                    {book.jenisBukuNama ?? `Type #${book.jenisBukuId}`}
+                </span>
+            </div>
+
+            <p className="mt-2 text-sm text-gray-600">
+                Penulis: {book.penulis}
+            </p>
+
+            <p className="mt-1 text-sm text-gray-600">
+                Tanggal Rilis: {book.tanggalRilis?.slice(0, 10) || "—"}
+            </p>
+
+            <p className="mt-1 text-sm text-gray-600">
+                Jumlah Halaman: {book.jumlahHalaman}
+            </p>
+
+            <div className="mt-5 flex gap-2 border-t border-gray-100 pt-4">
                 <button
                     type="button"
+                    disabled={disabled}
                     onClick={() => onEdit(book)}
-                    aria-label={`Edit ${book.title}`}
-                    className="rounded-lg p-2 text-blue-600 hover:bg-blue-50"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50"
                 >
-                    <Pencil size={17} />
+                    Edit
                 </button>
 
                 <button
                     type="button"
+                    disabled={disabled}
                     onClick={() => onDelete(book)}
-                    aria-label={`Delete ${book.title}`}
-                    className="rounded-lg p-2 text-red-600 hover:bg-red-50"
+                    className="text-sm font-medium text-red-600 hover:text-red-800 disabled:opacity-50"
                 >
-                    <Trash2 size={17} />
+                    Delete
                 </button>
             </div>
         </article>

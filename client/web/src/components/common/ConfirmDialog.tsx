@@ -1,4 +1,3 @@
-
 import Modal from "./Modal";
 
 interface ConfirmDialogProps {
@@ -10,12 +9,12 @@ interface ConfirmDialogProps {
 }
 
 export default function ConfirmDialog({
-                                          title,
-                                          message,
-                                          onConfirm,
-                                          onCancel,
-                                          loading = false,
-                                      }: ConfirmDialogProps) {
+    title,
+    message,
+    onConfirm,
+    onCancel,
+    loading = false,
+}: ConfirmDialogProps) {
     return (
         <Modal title={title} onClose={onCancel}>
             <p className="mb-6 text-sm text-gray-600">{message}</p>

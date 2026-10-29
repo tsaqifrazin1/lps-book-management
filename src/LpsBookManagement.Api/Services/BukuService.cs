@@ -9,8 +9,10 @@ namespace LpsBookManagement.Api.Services;
 
 public class BukuService(IBukuRepository repository) : IBukuService
 {
-    public async Task<List<BukuDto>> SearchAsync(string? search, CancellationToken ct) =>
-        (await repository.SearchAsync(search, ct)).Select(Map).ToList();
+    public async Task<List<BukuDto>> SearchAsync(string? search, CancellationToken ct)
+    {
+        return (await repository.SearchAsync(search, ct)).Select(Map).ToList();
+    }
 
     public async Task<BukuDto?> GetAsync(int id, CancellationToken ct)
     {
@@ -32,7 +34,7 @@ public class BukuService(IBukuRepository repository) : IBukuService
         await repository.AddAsync(entity, ct);
         await repository.SaveChangesAsync(ct);
 
-        await repository.AddHistoryAsync(new BukuHistory()
+        await repository.AddHistoryAsync(new BukuHistory
         {
             BukuId = entity.Id,
             Action = "CREATE",
@@ -40,7 +42,7 @@ public class BukuService(IBukuRepository repository) : IBukuService
         }, ct);
         await repository.SaveChangesAsync(ct);
 
-        return (await repository.GetByIdAsync(entity.Id, ct)) is { } created
+        return await repository.GetByIdAsync(entity.Id, ct) is { } created
             ? Map(created)
             : throw new InvalidOperationException("Book was not found after creation.");
     }
@@ -59,7 +61,7 @@ public class BukuService(IBukuRepository repository) : IBukuService
         entity.JumlahHalaman = request.JumlahHalaman;
 
         await repository.SaveChangesAsync(ct);
-        await repository.AddHistoryAsync(new BukuHistory()
+        await repository.AddHistoryAsync(new BukuHistory
         {
             BukuId = entity.Id,
             Action = "UPDATE",
@@ -80,7 +82,7 @@ public class BukuService(IBukuRepository repository) : IBukuService
         repository.Remove(entity);
         await repository.SaveChangesAsync(ct);
 
-        await repository.AddHistoryAsync(new BukuHistory()
+        await repository.AddHistoryAsync(new BukuHistory
         {
             BukuId = id,
             Action = "DELETE",
@@ -95,24 +97,28 @@ public class BukuService(IBukuRepository repository) : IBukuService
     {
         var rows = await repository.SearchAsync(search, ct);
         var sb = new StringBuilder();
-        sb.AppendLine("Id,Judul,Penulis,Book Type,Release Date,JumlahHalaman");
+        sb.AppendLine("Id,Judul,Penulis,Jenis Buku,Tanggal rilis,Jumlah Halaman");
 
         foreach (var x in rows)
-        {
             sb.AppendLine(string.Join(",",
                 x.Id,
                 Csv(x.Judul),
                 Csv(x.Penulis),
                 Csv(x.JenisBuku?.Nama ?? ""),
-                x.TanggalRilis.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
+                x.TanggalRilis.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 x.JumlahHalaman));
-        }
 
         return sb.ToString();
     }
 
-    private static BukuDto Map(Buku x) =>
-        new(x.Id, x.Judul, x.Penulis, x.JenisBukuId, x.JenisBuku?.Nama ?? "", x.TanggalRilis, x.JumlahHalaman);
+    private static BukuDto Map(Buku x)
+    {
+        return new BukuDto(x.Id, x.Judul, x.Penulis, x.JenisBukuId, x.JenisBuku?.Nama ?? "", x.TanggalRilis,
+            x.JumlahHalaman);
+    }
 
-    private static string Csv(string value) => $"\"{value.Replace("\"", "\"\"")}\"";
+    private static string Csv(string value)
+    {
+        return $"\"{value.Replace("\"", "\"\"")}\"";
+    }
 }

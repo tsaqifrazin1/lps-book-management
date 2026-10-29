@@ -1,137 +1,57 @@
-
-import { useState } from "react";
-import type { Book } from "../../types";
+import type { Book } from "../../hooks/useBooks";
 import BookCard from "./BookCard";
-import BookForm from "./BookForm";
-import BookDetails from "./BookDetails";
-import Modal from "../common/Modal";
-import ConfirmDialog from "../common/ConfirmDialog";
-import ErrorMessage from "../common/ErrorMessage";
-import { bookApi } from "../../services/api";
 
-interface BookListProps {
+type BookListProps = {
     books: Book[];
-    onRefresh: () => Promise<void>;
-}
+    loading: boolean;
+    onEdit: (book: Book) => void;
+    onDelete: (book: Book) => void;
+    disabled?: boolean;
+};
 
 export default function BookList({
-                                     books,
-                                     onRefresh,
-                                 }: BookListProps) {
-    const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-    const [editingBook, setEditingBook] = useState<Book | null>(null);
-    const [showCreate, setShowCreate] = useState(false);
-    const [deletingBook, setDeletingBook] = useState<Book | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    async function handleDelete() {
-        if (!deletingBook) return;
-
-        setLoading(true);
-        setError(null);
-
-        try {
-            await bookApi.delete(deletingBook.id);
-            setDeletingBook(null);
-            await onRefresh();
-        } catch (err) {
-            setError(
-                err instanceof Error ? err.message : "Unable to delete book.",
-            );
-        } finally {
-            setLoading(false);
-        }
+    books,
+    loading,
+    onEdit,
+    onDelete,
+    disabled = false,
+}: BookListProps) {
+    if (loading) {
+        return (
+            <p className="py-10 text-center text-gray-500">Loading books...</p>
+        );
     }
 
-    async function handleSubmit(
-        data: Parameters<typeof bookApi.create>[0],
-    ) {
-        if (editingBook) {
-            await bookApi.update(editingBook.id, data);
-        } else {
-            await bookApi.create(data);
-        }
-
-        setShowCreate(false);
-        setEditingBook(null);
-        await onRefresh();
+    if (books?.length === 0) {
+        return (
+            <div className="rounded-xl border border-dashed p-10 text-center">
+                <p className="font-medium text-gray-700">No books found</p>
+                <p className="mt-1 text-sm text-gray-500">
+                    Add a book to get started.
+                </p>
+            </div>
+        );
     }
 
     return (
-        <div>
-            <ErrorMessage message={error} />
-
-            <div className="mb-5 flex justify-end">
-                <button
-                    type="button"
-                    onClick={() => {
-                        setEditingBook(null);
-                        setShowCreate(true);
-                    }}
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                >
-                    Add Book
-                </button>
-            </div>
-
-            {books.length === 0 ? (
-                <p className="rounded-xl border bg-white p-8 text-center text-gray-500">
-                    No books found.
-                </p>
-            ) : (
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {books.map((book) => (
-                        <BookCard
-                            key={book.id}
-                            book={book}
-                            onView={setSelectedBook}
-                            onEdit={(book) => {
-                                setEditingBook(book);
-                                setShowCreate(true);
-                            }}
-                            onDelete={setDeletingBook}
-                        />
-                    ))}
-                </div>
-            )}
-
-            {showCreate && (
-                <Modal
-                    title={editingBook ? "Edit Book" : "Add Book"}
-                    onClose={() => {
-                        setShowCreate(false);
-                        setEditingBook(null);
-                    }}
-                >
-                    <BookForm
-                        book={editingBook ?? undefined}
-                        onSubmit={handleSubmit}
-                        onCancel={() => {
-                            setShowCreate(false);
-                            setEditingBook(null);
-                        }}
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {books?.length > 0 ? (
+                books.map((book) => (
+                    <BookCard
+                        key={book.id}
+                        book={book}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        disabled={disabled}
                     />
-                </Modal>
-            )}
-
-            {selectedBook && (
-                <Modal
-                    title="Book Details"
-                    onClose={() => setSelectedBook(null)}
-                >
-                    <BookDetails book={selectedBook} />
-                </Modal>
-            )}
-
-            {deletingBook && (
-                <ConfirmDialog
-                    title="Delete Book"
-                    message={`Are you sure you want to delete "${deletingBook.title}"?`}
-                    loading={loading}
-                    onCancel={() => setDeletingBook(null)}
-                    onConfirm={() => void handleDelete()}
-                />
+                ))
+            ) : (
+                <div className="col-span-full py-10 text-center text-gray-500">
+                    <p className="text-lg font-medium">No books found.</p>
+                    <p className="mt-1 text-sm">
+                        Try a different search keyword.
+                    </p>
+                </div>
             )}
         </div>
     );

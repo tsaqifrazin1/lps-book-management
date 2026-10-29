@@ -1,11 +1,8 @@
-
 interface LoadingProps {
     message?: string;
 }
 
-export default function Loading({
-                                    message = "Loading...",
-                                }: LoadingProps) {
+export default function Loading({ message = "Loading..." }: LoadingProps) {
     return (
         <div
             role="status"

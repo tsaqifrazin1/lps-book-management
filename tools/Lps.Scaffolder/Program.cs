@@ -1,4 +1,4 @@
-using  Npgsql;
+using Npgsql;
 using System.Text;
 
 if (args.Length < 2)
@@ -17,15 +17,15 @@ await using var connection = new NpgsqlConnection(connectionString);
 await connection.OpenAsync();
 
 const string sql = """
-    SELECT
-        table_name,
-        column_name,
-        data_type,
-        character_maximum_length
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-    ORDER BY table_name, ordinal_position;
-    """;
+                   SELECT
+                       table_name,
+                       column_name,
+                       data_type,
+                       character_maximum_length
+                   FROM information_schema.columns
+                   WHERE table_schema = 'public'
+                   ORDER BY table_name, ordinal_position;
+                   """;
 
 await using var command = new NpgsqlCommand(sql, connection);
 await using var reader = await command.ExecuteReaderAsync();

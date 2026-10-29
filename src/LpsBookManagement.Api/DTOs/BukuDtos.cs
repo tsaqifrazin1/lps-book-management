@@ -12,8 +12,7 @@ public record BukuDto(
     int JumlahHalaman);
 
 public record CreateBukuRequest(
-    [Required]
-    string Judul,
+    [Required] string Judul,
     string Penulis,
     int JenisBukuId,
     DateOnly TanggalRilis,

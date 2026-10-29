@@ -7,8 +7,10 @@ namespace Lps.Api.Services;
 
 public class MasterJenisBukuService(IMasterJenisBukuRepository repository) : IMasterJenisBukuService
 {
-    public async Task<List<MasterJenisBukuDto>> GetAllAsync(CancellationToken ct) =>
-        (await repository.GetAllAsync(ct)).Select(x => new MasterJenisBukuDto(x.Id, x.Nama)).ToList();
+    public async Task<List<MasterJenisBukuDto>> GetAllAsync(CancellationToken ct)
+    {
+        return (await repository.GetAllAsync(ct)).Select(x => new MasterJenisBukuDto(x.Id, x.Nama)).ToList();
+    }
 
     public async Task<MasterJenisBukuDto?> GetAsync(int id, CancellationToken ct)
     {

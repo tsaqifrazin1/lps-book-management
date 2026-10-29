@@ -59,6 +59,10 @@ namespace LpsBookManagement.Api.Migrations
 
                     b.HasIndex("JenisBukuId");
 
+                    b.HasIndex("Judul");
+
+                    b.HasIndex("Penulis");
+
                     b.ToTable("books", (string)null);
                 });
 

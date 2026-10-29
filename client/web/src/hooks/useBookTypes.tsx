@@ -1,7 +1,5 @@
-
 import { useCallback, useEffect, useState } from "react";
 import { bookTypeApi } from "../services/api";
-import type { BookTypes } from "../types";
 
 function normalizeBookTypes(data: unknown): BookType[] {
     if (Array.isArray(data)) {
@@ -28,7 +26,7 @@ function normalizeBookTypes(data: unknown): BookType[] {
 
 export function getApiErrorMessage(
     error: unknown,
-    fallback = "An unexpected error occurred."
+    fallback = "An unexpected error occurred.",
 ): string {
     if (error && typeof error === "object" && "response" in error) {
         const response = (
@@ -96,6 +94,19 @@ export function useBookTypes() {
         await loadBookTypes();
     }
 
+    const refresh = useCallback(async () => {
+        setLoading(true);
+        setError("");
+
+        try {
+            await Promise.all([loadBookTypes()]);
+        } catch (err) {
+            setError(getErrorMessage(err, "Failed to load books."));
+        } finally {
+            setLoading(false);
+        }
+    }, [loadBookTypes]);
+
     return {
         bookTypes,
         loading,
@@ -104,5 +115,6 @@ export function useBookTypes() {
         createBookType,
         updateBookType,
         deleteBookType,
+        refresh
     };
 }

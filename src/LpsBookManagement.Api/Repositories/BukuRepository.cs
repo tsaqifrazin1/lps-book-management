@@ -19,16 +19,28 @@ public class BukuRepository(AppDbContext db) : IBukuRepository
         return query.OrderBy(x => x.Judul).ToListAsync(ct);
     }
 
-    public Task<Buku?> GetByIdAsync(int id, CancellationToken ct) =>
-        db.Bukus.Include(x => x.JenisBuku).FirstOrDefaultAsync(x => x.Id == id, ct);
+    public Task<Buku?> GetByIdAsync(int id, CancellationToken ct)
+    {
+        return db.Bukus.Include(x => x.JenisBuku).FirstOrDefaultAsync(x => x.Id == id, ct);
+    }
 
-    public Task AddAsync(Buku entity, CancellationToken ct) =>
-        db.Bukus.AddAsync(entity, ct).AsTask();
+    public Task AddAsync(Buku entity, CancellationToken ct)
+    {
+        return db.Bukus.AddAsync(entity, ct).AsTask();
+    }
 
-    public void Remove(Buku entity) => db.Bukus.Remove(entity);
+    public void Remove(Buku entity)
+    {
+        db.Bukus.Remove(entity);
+    }
 
-    public Task SaveChangesAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
+    public Task SaveChangesAsync(CancellationToken ct)
+    {
+        return db.SaveChangesAsync(ct);
+    }
 
-    public Task AddHistoryAsync(BukuHistory history, CancellationToken ct) =>
-        db.BookHistories.AddAsync(history, ct).AsTask();
+    public Task AddHistoryAsync(BukuHistory history, CancellationToken ct)
+    {
+        return db.BookHistories.AddAsync(history, ct).AsTask();
+    }
 }

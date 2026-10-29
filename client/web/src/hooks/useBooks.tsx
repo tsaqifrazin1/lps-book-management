@@ -1,35 +1,33 @@
-
 import { useCallback, useEffect, useState } from "react";
-import { bookApi } from "../services/api";
-import type { Books } from "../types";
+import { bookApi, bookTypeApi } from "../services/api";
+import type { BukuPayload } from "../types;";
 
-function normalizeBooks(data: unknown): Book[] {
-    if (Array.isArray(data)) {
-        return data as Book[];
-    }
+export type Book = BookResponse;
+
+export type BookType = {
+    id: number;
+    name: string;
+};
+
+function unwrapArray<T>(data: unknown): T[] {
+    if (Array.isArray(data)) return data as T[];
 
     if (data && typeof data === "object") {
-        const response = data as {
+        const value = data as {
             data?: unknown;
+            items?: unknown;
             $values?: unknown;
         };
 
-        if (Array.isArray(response.data)) {
-            return response.data as Book[];
-        }
-
-        if (Array.isArray(response.$values)) {
-            return response.$values as Book[];
-        }
+        if (Array.isArray(value.data)) return value.data as T[];
+        if (Array.isArray(value.items)) return value.items as T[];
+        if (Array.isArray(value.$values)) return value.$values as T[];
     }
 
     return [];
 }
 
-export function getApiErrorMessage(
-    error: unknown,
-    fallback = "An unexpected error occurred."
-): string {
+export function getErrorMessage(error: unknown, fallback: string): string {
     if (error && typeof error === "object" && "response" in error) {
         const response = (
             error as {
@@ -60,49 +58,96 @@ export function getApiErrorMessage(
 
 export function useBooks() {
     const [books, setBooks] = useState<Book[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [bookTypes, setBookTypes] = useState<BookType[]>([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     const loadBooks = useCallback(async () => {
+        const response = await bookApi.getAll();
+        setBooks(unwrapArray<Book>(response));
+    }, []);
+
+    const loadBookTypes = useCallback(async () => {
+        const response = await bookTypeApi.getAll();
+
+        const items = unwrapArray<BookTypeResponse>(response);
+        console.log(items);
+
+        setBookTypes(
+            items.map((item) => ({
+                id: item.id,
+                nama: item.name ?? item.nama ?? "",
+            })),
+        );
+    }, []);
+
+    const refresh = useCallback(async () => {
         setLoading(true);
         setError("");
 
         try {
-            const response = await bookApi.getAll();
-            setBooks(normalizeBooks(response));
+            await Promise.all([loadBooks(), loadBookTypes()]);
         } catch (err) {
-            setError(getApiErrorMessage(err, "Failed to load book types."));
+            setError(getErrorMessage(err, "Failed to load books."));
+        } finally {
+            setLoading(false);
+        }
+    }, [loadBooks, loadBookTypes]);
+
+    useEffect(() => {
+        void refresh();
+    }, [refresh]);
+
+    const createBook = async (data: BukuPayload) => {
+        await bookApi.create(data);
+        await loadBooks();
+    };
+
+    const updateBook = async (id: number, data: BukuPayload) => {
+        await bookApi.update(id, data);
+        await loadBooks();
+    };
+
+    const deleteBook = async (id: number) => {
+        await bookApi.delete(id);
+        await loadBooks();
+    };
+
+    const exportBooks = async (search: string) => {
+        return bookApi.exportCsv(search);
+    };
+
+    const searchBooks = useCallback(async (search: string) => {
+        setLoading(true);
+        setError("");
+
+        try {
+            const response = await bookApi.getAll(search);
+
+            setBooks(Array.isArray(books) ? books : []);
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "Failed to search books.",
+            );
         } finally {
             setLoading(false);
         }
     }, []);
 
-    useEffect(() => {
-        void loadBooks();
-    }, [loadBooks]);
-
-    async function createBook(book: BukuPayload) {
-        await bookApi.create({ ...book });
-        await loadBooks();
-    }
-
-    async function updateBook(id: number, book: BukuPayload) {
-        await bookApi.update(id, { ...book });
-        await loadBooks();
-    }
-
-    async function deleteBook(id: number) {
-        await bookApi.delete(id);
-        await loadBooks();
-    }
-
     return {
         books,
+        setBooks,
+        bookTypes,
         loading,
         error,
-        loadBooks,
+        setError,
+        refresh,
         createBook,
         updateBook,
         deleteBook,
+        exportBooks,
+        searchBooks,
     };
 }

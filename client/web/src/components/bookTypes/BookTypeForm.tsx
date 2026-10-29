@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { FormEvent } from "react";
 import type { BookType } from "../../hooks/useBookTypes";
 
@@ -11,23 +10,18 @@ type BookTypeFormProps = {
 };
 
 export default function BookTypeForm({
-                                         bookType,
-                                         loading,
-                                         onSubmit,
-                                         onCancel,
-                                     }: BookTypeFormProps) {
-    const [value, setValue] = useState("");
+    bookType,
+    loading,
+    onSubmit,
+    onCancel,
+}: BookTypeFormProps) {
+    const [bookTypeName, setBookTypeName] = useState(bookType?.nama ?? "");
     const [error, setError] = useState("");
-
-    useEffect(() => {
-        setValue(bookType?.bookType ?? "");
-        setError("");
-    }, [bookType]);
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        const trimmedValue = value.trim();
+        const trimmedValue = bookTypeName.trim();
 
         if (!trimmedValue) {
             setError("Book type is required.");
@@ -40,7 +34,9 @@ export default function BookTypeForm({
             await onSubmit(trimmedValue);
         } catch (err) {
             setError(
-                err instanceof Error ? err.message : "Failed to save book type."
+                err instanceof Error
+                    ? err.message
+                    : "Failed to save book type.",
             );
         }
     }
@@ -56,10 +52,10 @@ export default function BookTypeForm({
                 </label>
 
                 <input
-                    id="bookType"
+                    id="bookTypeName"
                     type="text"
-                    value={value}
-                    onChange={(event) => setValue(event.target.value)}
+                    value={bookTypeName}
+                    onChange={(event) => setBookTypeName(event.target.value)}
                     maxLength={100}
                     required
                     disabled={loading}

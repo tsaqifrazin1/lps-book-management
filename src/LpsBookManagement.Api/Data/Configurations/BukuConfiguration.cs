@@ -43,5 +43,9 @@ public class BukuConfiguration : IEntityTypeConfiguration<Buku>
             .WithMany(x => x.Bukus)
             .HasForeignKey(x => x.JenisBukuId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.HasIndex(x => x.Judul);
+
+        builder.HasIndex(x => x.Penulis);
     }
 }

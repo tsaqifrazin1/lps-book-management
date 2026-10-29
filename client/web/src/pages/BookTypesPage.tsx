@@ -1,12 +1,8 @@
-
 import { useCallback, useState } from "react";
 import BookTypeForm from "../components/bookTypes/BookTypeForm";
 import BookTypeList from "../components/bookTypes/BookTypeList";
 import Modal from "../components/common/Modal";
-import {
-    getApiErrorMessage,
-    useBookTypes,
-} from "../hooks/useBookTypes";
+import { getApiErrorMessage, useBookTypes } from "../hooks/useBookTypes";
 import type { BookType } from "../hooks/useBookTypes";
 
 export default function BookTypesPage() {
@@ -17,11 +13,12 @@ export default function BookTypesPage() {
         createBookType,
         updateBookType,
         deleteBookType,
+        refresh
     } = useBookTypes();
 
     const [showModal, setShowModal] = useState(false);
     const [editingBookType, setEditingBookType] = useState<BookType | null>(
-        null
+        null,
     );
     const [success, setSuccess] = useState("");
     const [actionError, setActionError] = useState("");
@@ -65,15 +62,24 @@ export default function BookTypesPage() {
             setShowModal(false);
             setEditingBookType(null);
         } catch (err) {
-            throw new Error(getApiErrorMessage(err, "Failed to save book type."));
+            throw new Error(
+                getApiErrorMessage(err, "Failed to save book type."),
+                { cause: err },
+            );
         } finally {
             setSaving(false);
         }
     }
 
+    async function handleRefresh() {
+        setSuccess("");
+        await refresh();
+    }
+
+
     async function handleDelete(item: BookType) {
         const confirmed = window.confirm(
-            `Are you sure you want to delete "${item.bookType}"?`
+            `Are you sure you want to delete "${item.bookType}"?`,
         );
 
         if (!confirmed) return;
@@ -93,7 +99,7 @@ export default function BookTypesPage() {
             setSuccess("Book type deleted successfully.");
         } catch (err) {
             setActionError(
-                getApiErrorMessage(err, "Failed to delete book type.")
+                getApiErrorMessage(err, "Failed to delete book type."),
             );
         } finally {
             setSaving(false);
@@ -104,22 +110,38 @@ export default function BookTypesPage() {
         <div className="space-y-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Book Types</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">
+                        Book Types
+                    </h1>
                     <p className="mt-1 text-sm text-gray-500">
                         Manage the types used to categorize books.
                     </p>
                 </div>
 
-                <button
-                    type="button"
-                    onClick={openCreateModal}
-                    className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                >
-          <span aria-hidden="true" className="mr-2 text-lg leading-none">
-            +
-          </span>
-                    Add Book Type
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => void handleRefresh()}
+                        disabled={loading || saving}
+                        className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Refresh
+                    </button>
+                    
+                    <button
+                        type="button"
+                        onClick={openCreateModal}
+                        className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    >
+                        <span
+                            aria-hidden="true"
+                            className="mr-2 text-lg leading-none"
+                        >
+                            +
+                        </span>
+                        Add Book Type
+                    </button>
+                </div>
             </div>
 
             {(error || actionError) && (

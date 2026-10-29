@@ -1,4 +1,3 @@
-
 using LpsBookManagement.Api.Models;
 
 namespace LpsBookManagement.Api.Repositories;

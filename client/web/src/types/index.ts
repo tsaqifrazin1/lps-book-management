@@ -1,4 +1,3 @@
-
 export interface MasterJenisBuku {
     id: number;
     nama: string;

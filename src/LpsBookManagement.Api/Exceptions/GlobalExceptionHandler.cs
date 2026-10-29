@@ -12,10 +12,7 @@ public sealed class GlobalExceptionHandler(
         Exception exception,
         CancellationToken cancellationToken)
     {
-        if (httpContext.Response.HasStarted)
-        {
-            return false;
-        }
+        if (httpContext.Response.HasStarted) return false;
 
         logger.LogError(
             exception,

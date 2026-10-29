@@ -1,4 +1,3 @@
-
 import { BookOpen, Layers } from "lucide-react";
 
 type Page = "books" | "bookTypes";
@@ -8,10 +7,7 @@ interface SidebarProps {
     onNavigate: (page: Page) => void;
 }
 
-export default function Sidebar({
-                                    activePage,
-                                    onNavigate,
-                                }: SidebarProps) {
+export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
     const items = [
         { id: "books" as const, label: "Books", icon: BookOpen },
         { id: "bookTypes" as const, label: "Book Types", icon: Layers },

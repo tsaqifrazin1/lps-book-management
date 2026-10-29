@@ -1,13 +1,20 @@
-
-import type { Book, BookPayload, BookType } from "../types";
+import type {Book, BookPayload, BookType} from "../types";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 async function request<T>(
     path: string,
-    options?: RequestInit,
+    options: RequestInit & {
+        params?: Record<string, string>;
+        responseType?: "json" | "blob";
+    } = {}
 ): Promise<T> {
-    const response = await fetch(`${API_URL}${path}`, {
+    let url = `${API_URL}${path}`;
+
+    if (options?.params) url += `?${new URLSearchParams(options.params).toString()}`
+
+
+    const response = await fetch(url, {
         ...options,
         headers: {
             "Content-Type": "application/json",
@@ -25,11 +32,18 @@ async function request<T>(
         return undefined as T;
     }
 
+    if (options?.responseType === "blob") {
+        return await response.blob() as T;
+    }
+
     return response.json() as Promise<T>;
 }
 
 export const bookApi = {
-    getAll: () => request<Book[]>("/books"),
+    getAll: (search?: string) =>
+        request("/books", {
+            params: search ? {search: search.trim()} : {},
+        }),
 
     create: (payload: BookPayload) =>
         request<Book>("/books", {
@@ -47,6 +61,11 @@ export const bookApi = {
         request<void>(`/books/${id}`, {
             method: "DELETE",
         }),
+
+    exportCsv: (search?: string) =>
+        request("/books/export", {
+            params: search ? {search} : {},
+        }, "blob"),
 };
 
 export const bookTypeApi = {
@@ -62,10 +81,11 @@ export const bookTypeApi = {
         request<void>(`/book-types/${id}`, {
             method: "DELETE",
         }),
-    
+
     update: (id: number, payload: Pick<BookType, "name" | "type">) => {
         request<BookType>(`/book-types/${id}`, {
             method: "PUT",
-        })
-    }
+            body: JSON.stringify(payload),
+        });
+    },
 };

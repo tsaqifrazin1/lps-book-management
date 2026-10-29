@@ -14,10 +14,7 @@ public sealed class DatabaseErrorExceptionHandler(
         Exception exception,
         CancellationToken cancellationToken)
     {
-        if (exception is not DbUpdateException)
-        {
-            return false;
-        }
+        if (exception is not DbUpdateException) return false;
 
         logger.LogError(
             exception,

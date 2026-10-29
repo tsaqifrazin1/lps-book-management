@@ -1,164 +1,266 @@
-
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
+import Modal from "../components/common/Modal";
 import BookForm from "../components/books/BookForm";
 import BookList from "../components/books/BookList";
-import Modal from "../components/common/Modal";
-import {
-    getApiErrorMessage,
-    useBooks,
-} from "../hooks/useBooks";
-import type { Book } from "../hooks/useBooks";
+import { getErrorMessage, useBooks, type Book } from "../hooks/useBooks";
+import type { BookRequest } from "../services/api";
 
 export default function BooksPage() {
     const {
-       books,
+        books,
+        setBooks,
+        bookTypes,
         loading,
         error,
+        setError,
+        refresh,
         createBook,
         updateBook,
         deleteBook,
+        exportBooks,
+        searchBooks,
     } = useBooks();
 
-    const [showModal, setShowModal] = useState(false);
-    const [editingBook, setEditingBook] = useState<Book | null>(
-        null
-    );
-    const [success, setSuccess] = useState("");
-    const [actionError, setActionError] = useState("");
+    const [search, setSearch] = useState("");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingBook, setEditingBook] = useState<Book | null>(null);
+    const [deletingBook, setDeletingBook] = useState<Book | null>(null);
     const [saving, setSaving] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
 
     const closeModal = useCallback(() => {
-        if (!saving) {
-            setShowModal(false);
-            setEditingBook(null);
-        }
-    }, [saving]);
+        if (saving) return;
 
-    function openCreateModal() {
+        setIsModalOpen(false);
         setEditingBook(null);
-        setActionError("");
-        setSuccess("");
-        setShowModal(true);
+    }, [saving]);
+    
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            void (async () => {
+                try {
+                    const trimmed = search.trim();
+
+                    if (trimmed === "") {
+                        await refresh();
+                    } else {
+                        const results = await searchBooks(trimmed);
+                        setBooks(results);
+                    }
+                } catch (err) {
+                    setError(getErrorMessage(err, "Failed to search books."));
+                }
+            })();
+        }, 500);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [search, searchBooks, refresh, setBooks, setError]);
+
+    function handleAdd() {
+        setError("");
+        setSuccessMessage("");
+        setEditingBook(null);
+        setIsModalOpen(true);
     }
 
-    function openEditModal(item: Book) {
-        setEditingBook(item);
-        setActionError("");
-        setSuccess("");
-        setShowModal(true);
+    function handleEdit(book: Book) {
+        setError("");
+        setSuccessMessage("");
+        setEditingBook(book);
+        setIsModalOpen(true);
     }
 
-    async function handleSubmit(value: string) {
+    async function handleSubmit(data: BookRequest) {
         setSaving(true);
-        setActionError("");
-        setSuccess("");
+        setError("");
+        setSuccessMessage("");
 
         try {
             if (editingBook) {
-                await updateBook(editingBook.id, value);
-                setSuccess("Book updated successfully.");
+                await updateBook(editingBook.id, data);
+                setSuccessMessage("Book updated successfully.");
             } else {
-                await createBook(value);
-                setSuccess("Book created successfully.");
+                await createBook(data);
+                setSuccessMessage("Book created successfully.");
             }
 
-            setShowModal(false);
+            setIsModalOpen(false);
             setEditingBook(null);
         } catch (err) {
-            throw new Error(getApiErrorMessage(err, "Failed to save book."));
+            const message = getErrorMessage(err, "Failed to save book.");
+            setError(message);
+            throw new Error(message, { cause: err });
         } finally {
             setSaving(false);
         }
     }
 
-    async function handleDelete(item: Book) {
-        const confirmed = window.confirm(
-            `Are you sure you want to delete "${item.bookType}"?`
-        );
+    async function handleDelete() {
+        if (!deletingBook || saving) return;
 
-        if (!confirmed) return;
-
-        setActionError("");
-        setSuccess("");
         setSaving(true);
+        setError("");
+        setSuccessMessage("");
 
         try {
-            await deleteBook(item.id);
-
-            if (editingBook?.id === item.id) {
-                setShowModal(false);
-                setEditingBook(null);
-            }
-
-            setSuccess("Book deleted successfully.");
+            await deleteBook(deletingBook.id);
+            setDeletingBook(null);
+            setSuccessMessage("Book deleted successfully.");
         } catch (err) {
-            setActionError(
-                getApiErrorMessage(err, "Failed to delete book.")
-            );
+            setError(getErrorMessage(err, "Failed to delete book."));
         } finally {
             setSaving(false);
         }
+    }
+
+    async function handleRefresh() {
+        setSuccessMessage("");
+        await refresh();
+    }
+
+    async function handleExport() {
+        const response = await exportBooks(search);
+        const url = URL.createObjectURL(response);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = "books.csv";
+        link.click();
+
+        URL.revokeObjectURL(url);
     }
 
     return (
         <div className="space-y-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Book</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">Books</h1>
                     <p className="mt-1 text-sm text-gray-500">
-                        Manage the book.
+                        Manage your book collection.
                     </p>
                 </div>
 
-                <button
-                    type="button"
-                    onClick={openCreateModal}
-                    className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                >
-          <span aria-hidden="true" className="mr-2 text-lg leading-none">
-            +
-          </span>
-                    Add Book
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => void handleExport()}
+                        className="rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                    >
+                        Export CSV
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => void handleRefresh()}
+                        disabled={loading || saving}
+                        className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Refresh
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={handleAdd}
+                        disabled={saving}
+                        className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                    >
+                        + Add Book
+                    </button>
+                </div>
             </div>
 
-            {(error || actionError) && (
+            <input
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search by title or author..."
+                className="w-full rounded-lg border border-gray-300 px-4 py-2"
+            />
+
+            {error && (
                 <div
                     role="alert"
-                    className="whitespace-pre-line rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                    className="mb-4 flex items-start justify-between gap-3 rounded-md bg-red-50 p-4 text-sm text-red-700"
                 >
-                    {actionError || error}
+                    <p className="whitespace-pre-line">{error}</p>
+                    <button
+                        type="button"
+                        onClick={() => setError("")}
+                        aria-label="Dismiss error"
+                        className="font-bold"
+                    >
+                        &times;
+                    </button>
                 </div>
             )}
 
-            {success && (
+            {successMessage && (
                 <div
                     role="status"
-                    className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700"
+                    className="mb-4 rounded-md bg-green-50 p-4 text-sm text-green-700"
                 >
-                    {success}
+                    {successMessage}
                 </div>
             )}
 
             <BookList
                 books={books}
-                loading={loading || saving}
-                onEdit={openEditModal}
-                onDelete={(item) => void handleDelete(item)}
+                loading={loading}
+                onEdit={handleEdit}
+                onDelete={setDeletingBook}
+                disabled={saving}
             />
 
             <Modal
                 title={editingBook ? "Edit Book" : "Add Book"}
-                isOpen={showModal}
+                isOpen={isModalOpen}
                 onClose={closeModal}
             >
                 <BookForm
-                    key={editingBook?.id ?? "new-book"}
-                    bookType={editingBook}
-                    loading={saving}
+                    book={editingBook}
+                    bookTypes={bookTypes}
+                    saving={saving}
                     onSubmit={handleSubmit}
                     onCancel={closeModal}
                 />
+            </Modal>
+
+            <Modal
+                title="Delete Book"
+                isOpen={deletingBook !== null}
+                onClose={() => {
+                    if (!saving) setDeletingBook(null);
+                }}
+            >
+                {deletingBook && (
+                    <div>
+                        <p className="text-sm text-gray-700">
+                            Are you sure you want to delete{" "}
+                            <strong>{deletingBook.judul}</strong>? This action
+                            cannot be undone.
+                        </p>
+
+                        <div className="mt-6 flex justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setDeletingBook(null)}
+                                disabled={saving}
+                                className="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => void handleDelete()}
+                                disabled={saving}
+                                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                            >
+                                {saving ? "Deleting..." : "Delete"}
+                            </button>
+                        </div>
+                    </div>
+                )}
             </Modal>
         </div>
     );
